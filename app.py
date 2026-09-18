@@ -1,31 +1,29 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pickle
 import plotly.express as px
 
 
-# =====================================
-# PAGE CONFIGURATION
-# =====================================
+# ==================================
+# PAGE CONFIG
+# ==================================
 
 st.set_page_config(
-    page_title="House Price Intelligence Platform",
+    page_title="House Price Intelligence AI",
     page_icon="🏠",
     layout="wide"
 )
 
 
-# =====================================
-# CUSTOM CSS
-# =====================================
+# ==================================
+# CUSTOM STYLE
+# ==================================
 
-st.markdown(
-"""
+st.markdown("""
 <style>
 
 .main{
-background-color:#f6f8fc;
+background:#f8fafc;
 }
 
 
@@ -43,23 +41,28 @@ div[data-testid="metric-container"]{
 
 background:white;
 padding:20px;
-border-radius:15px;
-box-shadow:0px 4px 12px rgba(0,0,0,0.1);
+border-radius:18px;
+box-shadow:0px 5px 15px rgba(0,0,0,0.08);
+
+}
+
+.stButton button{
+
+width:100%;
+height:45px;
+border-radius:10px;
+font-size:18px;
 
 }
 
 </style>
-
-""",
-unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 
 
-# =====================================
-# LOAD DATA
-# =====================================
-
+# ==================================
+# LOAD FILES
+# ==================================
 
 @st.cache_data
 def load_data():
@@ -69,37 +72,26 @@ def load_data():
     )
 
 
-df = load_data()
-
-
-
-# =====================================
-# LOAD MODEL
-# =====================================
-
-
 @st.cache_resource
 def load_model():
 
-    model = pickle.load(
+    return pickle.load(
         open(
             "house_price_model.pkl",
             "rb"
         )
     )
 
-    return model
 
-
+df = load_data()
 
 model = load_model()
 
 
 
-# =====================================
+# ==================================
 # HEADER
-# =====================================
-
+# ==================================
 
 st.title(
 "🏠 House Price Intelligence Platform"
@@ -110,358 +102,295 @@ st.markdown(
 """
 ### AI Powered Real Estate Valuation System
 
-Predict property prices using Machine Learning Regression Models.
+Predict property prices using Machine Learning Regression.
 """
 )
 
 
-st.info(
-"""
-This platform analyzes housing features and predicts
-estimated market prices using Artificial Intelligence.
-"""
+st.success(
+"Powered by Random Forest Regression Model"
 )
 
 
 
-# =====================================
-# SIDEBAR
-# =====================================
-
-
-st.sidebar.header(
-"🏠 Property Information"
-)
-
-
-area = st.sidebar.number_input(
-"Area (sq ft)",
-500,
-10000,
-2500
-)
-
-
-bedrooms = st.sidebar.number_input(
-"Bedrooms",
-1,
-10,
-3
-)
-
-
-bathrooms = st.sidebar.number_input(
-"Bathrooms",
-1,
-10,
-2
-)
-
-
-floors = st.sidebar.number_input(
-"Floors",
-1,
-5,
-2
-)
-
-
-age = st.sidebar.number_input(
-"House Age",
-0,
-100,
-10
-)
-
-
-location = st.sidebar.selectbox(
-"Location",
-df["Location"].unique()
-)
-
-
-
-# =====================================
-# EXECUTIVE OVERVIEW
-# =====================================
-
+# ==================================
+# DASHBOARD KPI
+# ==================================
 
 st.header(
 "📊 Real Estate Overview"
 )
 
 
-c1,c2,c3,c4 = st.columns(4)
+a,b,c,d,e = st.columns(5)
 
 
-with c1:
-
-    st.metric(
-    "Total Properties",
-    len(df)
-    )
-
-
-with c2:
-
-    st.metric(
-    "Average Price",
-    round(
-    df["Price"].mean()
-    )
-    )
-
-
-with c3:
-
-    st.metric(
-    "Average Area",
-    round(
-    df["Area"].mean()
-    )
-    )
-
-
-with c4:
-
-    st.metric(
-    "Locations",
-    df["Location"].nunique()
-    )
-
-
-
-# =====================================
-# MARKET ANALYSIS
-# =====================================
-
-
-st.header(
-"📈 Market Analysis"
+a.metric(
+"🏠 Properties",
+len(df)
 )
 
 
-col1,col2 = st.columns(2)
+b.metric(
+"💰 Average Price",
+f"{df['Price'].mean()/1000000:.1f}M"
+)
+
+
+c.metric(
+"📐 Avg Area",
+f"{df['Area'].mean():.0f} sq ft"
+)
+
+
+d.metric(
+"📍 Locations",
+df["Location"].nunique()
+)
+
+
+e.metric(
+"🔥 Highest Price",
+f"{df['Price'].max()/1000000:.1f}M"
+)
 
 
 
-with col1:
+# ==================================
+# TABS
+# ==================================
 
-    fig1 = px.histogram(
+tab1,tab2,tab3,tab4 = st.tabs(
+[
+"📈 Market Analytics",
+"🤖 AI Prediction",
+"🧠 Model Information",
+"📥 Data Export"
+]
+)
+
+
+
+# ==================================
+# MARKET ANALYTICS
+# ==================================
+
+with tab1:
+
+
+    col1,col2 = st.columns(2)
+
+
+    with col1:
+
+        fig1 = px.histogram(
+
+            df,
+
+            x="Price",
+
+            title="House Price Distribution"
+
+        )
+
+        st.plotly_chart(
+            fig1,
+            use_container_width=True
+        )
+
+
+    with col2:
+
+
+        location_price = (
+            df.groupby("Location")
+            ["Price"]
+            .mean()
+            .reset_index()
+        )
+
+
+        fig2 = px.bar(
+
+            location_price,
+
+            x="Location",
+
+            y="Price",
+
+            title="Average Price By Location"
+
+        )
+
+
+        st.plotly_chart(
+            fig2,
+            use_container_width=True
+        )
+
+
+
+    fig3 = px.scatter(
 
         df,
 
-        x="Price",
-
-        title="House Price Distribution"
-
-    )
-
-
-    st.plotly_chart(
-        fig1,
-        use_container_width=True
-    )
-
-
-
-with col2:
-
-
-    location_price = (
-        df.groupby("Location")["Price"]
-        .mean()
-        .reset_index()
-    )
-
-
-    fig2 = px.bar(
-
-        location_price,
-
-        x="Location",
+        x="Area",
 
         y="Price",
 
-        title="Average Price by Location"
+        color="Location",
+
+        size="Bedrooms",
+
+        title="Area vs Price Relationship"
 
     )
 
 
     st.plotly_chart(
-        fig2,
+        fig3,
         use_container_width=True
     )
 
 
 
-# =====================================
-# AREA VS PRICE
-# =====================================
-
-
-st.header(
-"🏘 Property Relationship Analysis"
-)
-
-
-fig3 = px.scatter(
-
-df,
-
-x="Area",
-
-y="Price",
-
-color="Location",
-
-title="Area vs Property Price"
-
-)
-
-
-st.plotly_chart(
-fig3,
-use_container_width=True
-)
-
-
-
-# =====================================
+# ==================================
 # AI PREDICTION
-# =====================================
+# ==================================
+
+with tab2:
 
 
-st.header(
-"🤖 AI House Price Prediction"
-)
-
-
-
-if st.button(
-"Predict House Price"
-):
-
-
-    input_data = pd.DataFrame(
-
-    {
-
-    "Area":[area],
-
-    "Bedrooms":[bedrooms],
-
-    "Bathrooms":[bathrooms],
-
-    "Floors":[floors],
-
-    "Age":[age],
-
-    "Location":[location]
-
-    }
-
+    st.header(
+    "🏠 Predict Your Property Value"
     )
 
 
-    prediction = model.predict(
-        input_data
-    )
+    col1,col2 = st.columns(2)
 
 
-    st.success(
+    with col1:
 
-    f"""
-    🏠 Estimated House Price
-
-    Rs {prediction[0]:,.0f}
-
-    """
-
-    )
+        area = st.slider(
+            "Area (sq ft)",
+            500,
+            10000,
+            2500
+        )
 
 
+        bedrooms = st.selectbox(
+            "Bedrooms",
+            [1,2,3,4,5,6]
+        )
 
-# =====================================
+
+        bathrooms = st.selectbox(
+            "Bathrooms",
+            [1,2,3,4,5]
+        )
+
+
+        floors = st.selectbox(
+            "Floors",
+            [1,2,3]
+        )
+
+
+    with col2:
+
+
+        age = st.slider(
+            "Property Age",
+            0,
+            50,
+            5
+        )
+
+
+        location = st.selectbox(
+            "Location",
+            df["Location"].unique()
+        )
+
+
+
+    if st.button(
+        "🚀 Predict House Price"
+    ):
+
+
+        input_data = pd.DataFrame({
+
+            "Area":[area],
+
+            "Bedrooms":[bedrooms],
+
+            "Bathrooms":[bathrooms],
+
+            "Floors":[floors],
+
+            "Age":[age],
+
+            "Location":[location]
+
+        })
+
+
+        prediction = model.predict(
+            input_data
+        )
+
+
+        price = prediction[0]
+
+
+        st.success(
+
+        f"""
+        🏠 Estimated Property Value
+
+        ## Rs {price:,.0f}
+
+        """
+
+        )
+
+
+
+# ==================================
 # MODEL INFORMATION
-# =====================================
+# ==================================
+
+with tab3:
 
 
-st.header(
-"🧠 Machine Learning Information"
-)
+    st.header(
+    "🧠 Machine Learning Details"
+    )
 
 
-
-col1,col2,col3 = st.columns(3)
-
+    x,y,z = st.columns(3)
 
 
-col1.metric(
-"Problem Type",
-"Regression"
-)
+    x.metric(
+    "Algorithm",
+    "Random Forest"
+    )
 
 
-col2.metric(
-"Algorithm",
-"Random Forest"
-)
+    y.metric(
+    "Learning",
+    "Supervised"
+    )
 
 
-col3.metric(
-"Prediction",
-"House Price"
-)
+    z.metric(
+    "Task",
+    "Regression"
+    )
 
 
-
-st.markdown(
+    st.markdown(
 """
-### ML Workflow
-
-"""
-)
-
-
-
-# =====================================
-# DOWNLOAD DATA
-# =====================================
-
-
-st.header(
-"📥 Download Dataset"
-)
-
-
-csv = df.to_csv(
-index=False
-)
-
-
-st.download_button(
-
-"Download Housing Data",
-
-csv,
-
-"house_prices.csv",
-
-"text/csv"
-
-)
-
-
-
-# =====================================
-# FOOTER
-# =====================================
-
-
-st.markdown(
-"""
----
-🚀 Built using Python | Machine Learning | Regression | Streamlit
-"""
-)
+### Workflow
