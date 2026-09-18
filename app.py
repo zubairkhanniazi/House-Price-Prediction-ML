@@ -420,30 +420,6 @@ st.markdown(
 """
 ### ML Workflow
 
-
-Housing Dataset
-
-    ↓
-
-Data Cleaning
-
-    ↓
-
-Feature Engineering
-
-    ↓
-
-Model Training
-
-    ↓
-
-Regression Model
-
-    ↓
-
-Price Prediction
-
-
 """
 )
 
