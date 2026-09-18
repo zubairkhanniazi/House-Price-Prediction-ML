@@ -415,3 +415,12 @@ c.metric(
 st.markdown(
 """
 ### Workflow
+
+1. **Data Collection** — Historical property records were gathered, including area, bedrooms, bathrooms, floors, age, and location.
+2. **Data Cleaning** — Missing values and outliers were handled to ensure data quality.
+3. **Feature Engineering** — Categorical variables (e.g. Location) were encoded, and numerical features were scaled where needed.
+4. **Model Training** — A Random Forest Regressor was trained on the processed dataset to learn the relationship between property features and price.
+5. **Model Evaluation** — Performance was validated using standard regression metrics (e.g. RMSE, R²) on a held-out test set.
+6. **Deployment** — The trained model was integrated into this Streamlit application for real-time price predictions.
+"""
+)
