@@ -4,68 +4,62 @@ import pickle
 import plotly.express as px
 
 
-# ==================================
-# PAGE CONFIG
-# ==================================
+# ==========================================
+# PAGE SETTINGS
+# ==========================================
 
 st.set_page_config(
-    page_title="House Price Intelligence AI",
+    page_title="House Price AI Intelligence",
     page_icon="🏠",
     layout="wide"
 )
 
 
-# ==================================
-# CUSTOM STYLE
-# ==================================
+# ==========================================
+# CUSTOM CSS
+# ==========================================
 
-st.markdown("""
+st.markdown(
+"""
 <style>
 
-.main{
-background:#f8fafc;
+body {
+background-color:#f8fafc;
 }
 
-
-h1{
+.main-title {
+font-size:45px;
+font-weight:700;
 color:#0f172a;
 }
 
-
-h2{
-color:#1e293b;
+.subtitle {
+font-size:20px;
+color:#475569;
 }
 
-
-div[data-testid="metric-container"]{
+.card {
 
 background:white;
 padding:20px;
-border-radius:18px;
-box-shadow:0px 5px 15px rgba(0,0,0,0.08);
-
-}
-
-.stButton button{
-
-width:100%;
-height:45px;
-border-radius:10px;
-font-size:18px;
+border-radius:15px;
+box-shadow:0px 4px 15px rgba(0,0,0,0.08);
 
 }
 
 </style>
-""", unsafe_allow_html=True)
+""",
+unsafe_allow_html=True
+)
 
 
 
-# ==================================
-# LOAD FILES
-# ==================================
+# ==========================================
+# LOAD DATA AND MODEL
+# ==========================================
 
 @st.cache_data
-def load_data():
+def load_dataset():
 
     return pd.read_csv(
         "house_prices.csv"
@@ -83,154 +77,162 @@ def load_model():
     )
 
 
-df = load_data()
+df = load_dataset()
 
 model = load_model()
 
 
 
-# ==================================
+# ==========================================
 # HEADER
-# ==================================
-
-st.title(
-"🏠 House Price Intelligence Platform"
-)
+# ==========================================
 
 
 st.markdown(
 """
-### AI Powered Real Estate Valuation System
+<div class="main-title">
 
-Predict property prices using Machine Learning Regression.
+🏠 House Price Intelligence Platform
+
+</div>
+
+<div class="subtitle">
+
+AI Powered Real Estate Valuation System
+
+</div>
+
+""",
+unsafe_allow_html=True
+)
+
+
+st.info(
+"""
+This platform uses Machine Learning to analyze property
+features and estimate market value.
 """
 )
 
 
-st.success(
-"Powered by Random Forest Regression Model"
-)
+
+# ==========================================
+# KPI DASHBOARD
+# ==========================================
+
+
+st.header("📊 Executive Overview")
+
+
+c1,c2,c3,c4 = st.columns(4)
+
+
+with c1:
+    st.metric(
+        "Total Houses",
+        len(df)
+    )
+
+
+with c2:
+    st.metric(
+        "Average Price",
+        f"{df['Price'].mean()/1000000:.2f} M"
+    )
+
+
+with c3:
+    st.metric(
+        "Average Area",
+        f"{df['Area'].mean():.0f} sqft"
+    )
+
+
+with c4:
+    st.metric(
+        "Locations",
+        df["Location"].nunique()
+    )
 
 
 
-# ==================================
-# DASHBOARD KPI
-# ==================================
+# ==========================================
+# ANALYTICS SECTION
+# ==========================================
+
 
 st.header(
-"📊 Real Estate Overview"
+"📈 Real Estate Analytics"
 )
 
 
-a,b,c,d,e = st.columns(5)
-
-
-a.metric(
-"🏠 Properties",
-len(df)
-)
-
-
-b.metric(
-"💰 Average Price",
-f"{df['Price'].mean()/1000000:.1f}M"
-)
-
-
-c.metric(
-"📐 Avg Area",
-f"{df['Area'].mean():.0f} sq ft"
-)
-
-
-d.metric(
-"📍 Locations",
-df["Location"].nunique()
-)
-
-
-e.metric(
-"🔥 Highest Price",
-f"{df['Price'].max()/1000000:.1f}M"
-)
-
-
-
-# ==================================
-# TABS
-# ==================================
-
-tab1,tab2,tab3,tab4 = st.tabs(
+tab1,tab2,tab3 = st.tabs(
 [
-"📈 Market Analytics",
-"🤖 AI Prediction",
-"🧠 Model Information",
-"📥 Data Export"
+"Price Analysis",
+"Location Analysis",
+"Property Trends"
 ]
 )
 
 
 
-# ==================================
-# MARKET ANALYTICS
-# ==================================
-
 with tab1:
 
 
-    col1,col2 = st.columns(2)
+    fig = px.histogram(
 
+        df,
 
-    with col1:
+        x="Price",
 
-        fig1 = px.histogram(
+        title="Price Distribution"
 
-            df,
+    )
 
-            x="Price",
-
-            title="House Price Distribution"
-
-        )
-
-        st.plotly_chart(
-            fig1,
-            use_container_width=True
-        )
-
-
-    with col2:
-
-
-        location_price = (
-            df.groupby("Location")
-            ["Price"]
-            .mean()
-            .reset_index()
-        )
-
-
-        fig2 = px.bar(
-
-            location_price,
-
-            x="Location",
-
-            y="Price",
-
-            title="Average Price By Location"
-
-        )
-
-
-        st.plotly_chart(
-            fig2,
-            use_container_width=True
-        )
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
 
 
-    fig3 = px.scatter(
+with tab2:
+
+
+    location_data = (
+
+        df.groupby("Location")
+        ["Price"]
+        .mean()
+        .reset_index()
+
+    )
+
+
+    fig = px.bar(
+
+        location_data,
+
+        x="Location",
+
+        y="Price",
+
+        title="Average Price by Location"
+
+    )
+
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+
+
+with tab3:
+
+
+    fig = px.scatter(
 
         df,
 
@@ -248,149 +250,168 @@ with tab1:
 
 
     st.plotly_chart(
-        fig3,
+        fig,
         use_container_width=True
     )
 
 
 
-# ==================================
+# ==========================================
 # AI PREDICTION
-# ==================================
-
-with tab2:
+# ==========================================
 
 
-    st.header(
-    "🏠 Predict Your Property Value"
+st.header(
+"🤖 AI House Price Predictor"
+)
+
+
+left,right = st.columns(2)
+
+
+with left:
+
+
+    area = st.slider(
+
+        "Area (sq ft)",
+
+        500,
+
+        10000,
+
+        2500
+
     )
 
 
-    col1,col2 = st.columns(2)
+    bedrooms = st.selectbox(
+
+        "Bedrooms",
+
+        [1,2,3,4,5,6]
+
+    )
 
 
-    with col1:
+    bathrooms = st.selectbox(
 
-        area = st.slider(
-            "Area (sq ft)",
-            500,
-            10000,
-            2500
-        )
+        "Bathrooms",
 
+        [1,2,3,4,5]
 
-        bedrooms = st.selectbox(
-            "Bedrooms",
-            [1,2,3,4,5,6]
-        )
-
-
-        bathrooms = st.selectbox(
-            "Bathrooms",
-            [1,2,3,4,5]
-        )
-
-
-        floors = st.selectbox(
-            "Floors",
-            [1,2,3]
-        )
-
-
-    with col2:
-
-
-        age = st.slider(
-            "Property Age",
-            0,
-            50,
-            5
-        )
-
-
-        location = st.selectbox(
-            "Location",
-            df["Location"].unique()
-        )
+    )
 
 
 
-    if st.button(
-        "🚀 Predict House Price"
-    ):
+with right:
 
 
-        input_data = pd.DataFrame({
+    floors = st.selectbox(
 
-            "Area":[area],
+        "Floors",
 
-            "Bedrooms":[bedrooms],
+        [1,2,3]
 
-            "Bathrooms":[bathrooms],
-
-            "Floors":[floors],
-
-            "Age":[age],
-
-            "Location":[location]
-
-        })
+    )
 
 
-        prediction = model.predict(
-            input_data
-        )
+    age = st.slider(
+
+        "Property Age",
+
+        0,
+
+        50,
+
+        5
+
+    )
 
 
-        price = prediction[0]
+    location = st.selectbox(
+
+        "Location",
+
+        df["Location"].unique()
+
+    )
 
 
-        st.success(
+
+
+if st.button(
+"🚀 Predict Property Price"
+):
+
+
+    input_data = pd.DataFrame({
+
+        "Area":[area],
+
+        "Bedrooms":[bedrooms],
+
+        "Bathrooms":[bathrooms],
+
+        "Floors":[floors],
+
+        "Age":[age],
+
+        "Location":[location]
+
+    })
+
+
+    prediction = model.predict(
+        input_data
+    )
+
+
+    st.success(
 
         f"""
         🏠 Estimated Property Value
 
-        ## Rs {price:,.0f}
+        ## Rs {prediction[0]:,.0f}
 
         """
 
-        )
-
-
-
-# ==================================
-# MODEL INFORMATION
-# ==================================
-
-with tab3:
-
-
-    st.header(
-    "🧠 Machine Learning Details"
     )
 
 
-    x,y,z = st.columns(3)
+
+# ==========================================
+# MACHINE LEARNING INFORMATION
+# ==========================================
 
 
-    x.metric(
-    "Algorithm",
-    "Random Forest"
-    )
+st.header(
+"🧠 Machine Learning Methodology"
+)
 
 
-    y.metric(
-    "Learning",
-    "Supervised"
-    )
+a,b,c = st.columns(3)
 
 
-    z.metric(
-    "Task",
-    "Regression"
-    )
+a.metric(
+"Algorithm",
+"Random Forest"
+)
 
 
-    st.markdown(
+b.metric(
+"Learning Type",
+"Supervised"
+)
+
+
+c.metric(
+"Problem",
+"Regression"
+)
+
+
+
+st.markdown(
 """
 ### Workflow
